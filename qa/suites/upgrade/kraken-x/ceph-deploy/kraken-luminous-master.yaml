@@ -44,7 +44,7 @@ tasks:
     skip-mgr: True
 - ceph-deploy.upgrade:
     branch:
-      stable: luminous
+      dev: luminous
     setup-mgr-node: True
     check-for-healthy: True
     roles:
