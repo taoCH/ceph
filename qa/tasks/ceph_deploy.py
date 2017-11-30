@@ -264,7 +264,7 @@ def build_ceph_cluster(ctx, config):
         for remote in osds.remotes.iterkeys():
             # all devs should be lvm
             devs = teuthology.get_scratch_devices(remote)
-            osd_create_cmd = './ceph-deploy osd create '
+            osd_create_cmd = './ceph-deploy osd create ' + remote.shortname + ' '
             # default is bluestore so we just need config item for filestore
             if config.get('filestore') is not None:
                 osd_create_cmd += '--filestore '
