@@ -906,9 +906,9 @@ def task(ctx, config):
 
     # we need to use 1.5.39-stable for testing jewel or master branch with
     # ceph-disk
-    if config.get('use-ceph-volume', False):
+    if config.get('use-ceph-volume', False) is False:
         # check we are not testing specific branch
-        if config.get('ceph-deploy-branch', False):
+        if config.get('ceph-deploy-branch', False) is False:
             config['ceph-deploy-branch'] = '1.5.39-stable'
 
     with contextutil.nested(
