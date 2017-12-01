@@ -263,14 +263,28 @@ def build_ceph_cluster(ctx, config):
         no_of_osds = 0
         for remote in osds.remotes.iterkeys():
             # all devs should be lvm
-            devs = teuthology.get_scratch_devices(remote)
             osd_create_cmd = './ceph-deploy osd create ' + remote.shortname + ' '
             # default is bluestore so we just need config item for filestore
-            if config.get('filestore') is not None:
-                osd_create_cmd += '--filestore '
-                # filestore with ceph-volume also needs journal, #todo
+            roles = ctx.cluster.remotes[remote]
+            dev_needed = len([role for role in roles
+                              if role.startswith('osd')])
+            all_devs = teuthology.get_scratch_devices(remote)[0:dev_needed]
+            devs = all_devs[0:dev_needed]
+            # rest of the devices can be used for journal if required
+            jdevs = dev_needed
             for device in devs:
-                osd_create_cmd += ' --data ' + device
+                device_split = device.split('/')
+                lv_device = device_split[-1]
+                if config.get('filestore') is not None:
+                    osd_create_cmd += '--filestore --data ' + lv_device + ' '
+                    # filestore with ceph-volume also needs journal disk
+                    jdevice = all_devs.pop(jdevs)
+                    jdevice_split = jdevice.split('/')
+                    j_lv = jdevice_split[-1]
+                    osd_create_cmd += '--journal ' + j_lv
+                    jdevs += 1
+                else:
+                    osd_create_cmd += ' --data ' + lv_device
                 estatus_osd = execute_ceph_deploy(osd_create_cmd)
                 if estatus_osd == 0:
                     log.info('successfully created osd')
